@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1069826527509",
+    "project_id": "chrono-point",
+    "storage_bucket": "chrono-point.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1069826527509:android:eca8d53d9a7dda2b97991c",
+        "android_client_info": {
+          "package_name": "com.example.chrono_point"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqjbba9hGKbnswQ3W6NHm4UPyFryCUfwI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
