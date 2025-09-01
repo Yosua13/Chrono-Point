@@ -1,6 +1,6 @@
 import 'package:chrono_point/business/auth/auth_bloc.dart';
 import 'package:chrono_point/data/repositories/auth_repository.dart';
-import 'package:chrono_point/presentation/screens/home_screen.dart';
+import 'package:chrono_point/presentation/screens/main_screen.dart';
 import 'package:chrono_point/presentation/screens/login_screen.dart';
 import 'package:chrono_point/presentation/widgets/app_dialogs.dart';
 import 'package:flutter/material.dart';
@@ -67,7 +67,7 @@ class AuthWrapper extends StatelessWidget {
       },
       builder: (context, state) {
         if (state is AuthAuthenticated) {
-          return HomeScreen();
+          return MainScreen();
         }
         return LoginScreen();
       },

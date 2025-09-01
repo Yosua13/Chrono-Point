@@ -1,4 +1,3 @@
-import 'package:chrono_point/data/models/users.dart';
 import 'package:chrono_point/data/repositories/auth_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';

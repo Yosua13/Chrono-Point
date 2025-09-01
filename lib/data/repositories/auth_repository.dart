@@ -1,4 +1,4 @@
-import 'package:chrono_point/data/models/users.dart';
+import 'package:chrono_point/data/models/employee.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -25,15 +25,24 @@ class AuthRepository {
 
       // Simpan data tambahan ke Firestore
       if (userCredential.user != null) {
-        Users newUser = Users(
-          uid: userCredential.user!.uid,
+        Employee newEmployee = Employee(
+          employeeId: userCredential.user!.uid,
           email: email,
-          name: name,
+          fullName: name,
+          phoneNumber: null,
+          address: null,
+          dateOfBirth: null,
+          gender: null,
+          position: null,
+          department: null,
+          hireDate: DateTime.now(),
+          employeeStatus: 'aktif',
+          profilePictureUrl: null,
         );
         await _firestore
-            .collection('users')
+            .collection('employees')
             .doc(userCredential.user!.uid)
-            .set(newUser.toJson());
+            .set(newEmployee.toJson());
 
         await _firebaseAuth.signOut();
       }
@@ -65,5 +74,19 @@ class AuthRepository {
   // Fungsi untuk Sign Out
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
+  }
+
+  Stream<Employee> getEmployeeStream(String employeeId) {
+    return _firestore.collection('employees').doc(employeeId).snapshots().map((
+      snapshot,
+    ) {
+      if (snapshot.exists) {
+        // Konversi snapshot Firestore menjadi objek Employee
+        return Employee.fromSnapshot(snapshot);
+      } else {
+        // Jika data tidak ditemukan, lemparkan error
+        throw Exception("Data karyawan tidak ditemukan untuk ID: $employeeId");
+      }
+    });
   }
 }
