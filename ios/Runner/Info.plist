@@ -45,5 +45,16 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- geolocator -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
+
+	<key>NSLocationWhenInUseUsageDescription</key>
+    <string>Aplikasi ini memerlukan akses lokasi untuk memverifikasi kehadiran Anda di kantor.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>Aplikasi ini memerlukan akses lokasi untuk memverifikasi kehadiran Anda di kantor.</string>
 </dict>
 </plist>
