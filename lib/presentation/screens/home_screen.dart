@@ -110,7 +110,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          employee.department ?? 'Departemen Belum Diatur',
+                          employee.departemen?.namaDepartemen ??
+                              "Departemen Kosong",
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.9),
                             fontSize: 14,
@@ -118,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          employee.fullName,
+                          employee.namaLengkap,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 22,
@@ -127,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          employee.position ?? 'Posisi Belum Diatur',
+                          employee.jabatan?.namaJabatan ?? "Jabatan Kosong",
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.9),
                             fontSize: 14,
@@ -139,10 +140,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.white.withOpacity(0.9),
-                    backgroundImage: employee.profilePictureUrl != null
-                        ? NetworkImage(employee.profilePictureUrl!)
+                    backgroundImage: employee.fotoProfil != null
+                        ? NetworkImage(employee.fotoProfil!)
                         : null,
-                    child: employee.profilePictureUrl == null
+                    child: employee.fotoProfil == null
                         ? Icon(Icons.person, size: 30, color: baseColor)
                         : null,
                   ),

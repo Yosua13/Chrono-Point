@@ -1,7 +1,7 @@
 import 'package:chrono_point/data/repositories/auth_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -33,9 +33,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           password: event.password,
         );
         emit(AuthSignUpSuccess());
+        await _authRepository.signOut();
+        emit(AuthUnauthenticated());
       } catch (e) {
         emit(AuthFailure(e.toString()));
-        // Kembali ke state Unauthenticated setelah error
         emit(AuthUnauthenticated());
       }
     });
@@ -44,13 +45,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSignInRequested>((event, emit) async {
       emit(AuthLoading());
       try {
-        final UserCredential = await _authRepository.signIn(
+        final authResponse = await _authRepository.signIn(
           email: event.email,
           password: event.password,
         );
 
-        if (UserCredential != null) {
-          emit(AuthLoginSuccess(UserCredential.user!));
+        if (authResponse != null) {
+          emit(AuthLoginSuccess(authResponse.user!));
         } else {
           emit(const AuthFailure("Login Gagal: Data pengguna tidak ditemukan"));
           emit(AuthUnauthenticated());
@@ -62,12 +63,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     });
 
-    // BARU: Handler untuk event setelah popup ditutup
     on<AuthLoginAcknowledged>((event, emit) {
-      // Pastikan state saat ini adalah AuthLoginSuccess untuk mendapatkan data user
       if (state is AuthLoginSuccess) {
         final currentUser = (state as AuthLoginSuccess).user;
-        // Pindahkan ke state AuthAuthenticated yang akan memicu navigasi oleh builder
         emit(AuthAuthenticated(currentUser));
       }
     });

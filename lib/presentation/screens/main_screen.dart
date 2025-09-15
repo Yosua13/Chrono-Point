@@ -3,11 +3,11 @@ import 'package:chrono_point/data/models/employee.dart';
 import 'package:chrono_point/data/repositories/auth_repository.dart';
 import 'package:chrono_point/presentation/screens/home_screen.dart';
 import 'package:chrono_point/presentation/screens/notification_screen.dart';
-import 'package:chrono_point/presentation/screens/profile_tab.dart';
+import 'package:chrono_point/presentation/screens/profile_screen.dart';
 import 'package:chrono_point/presentation/screens/schedule_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -45,7 +45,7 @@ class _MainScreenState extends State<MainScreen> {
 
     // Gunakan StreamBuilder untuk mendapatkan data Employee secara real-time
     return StreamBuilder<Employee>(
-      stream: authRepository.getEmployeeStream(user.uid),
+      stream: authRepository.getEmployeeStream(user.id),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(

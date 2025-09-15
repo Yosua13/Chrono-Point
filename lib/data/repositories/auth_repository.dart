@@ -1,17 +1,16 @@
 import 'package:chrono_point/data/models/employee.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRepository {
-  final FirebaseAuth _firebaseAuth;
-  final FirebaseFirestore _firestore;
+  final SupabaseClient _supabaseClient;
 
-  AuthRepository({FirebaseAuth? firebaseAuth, FirebaseFirestore? firestore})
-    : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-      _firestore = firestore ?? FirebaseFirestore.instance;
+  AuthRepository({SupabaseClient? supabaseClient})
+    : _supabaseClient = supabaseClient ?? Supabase.instance.client;
 
   // Mendapatkan stream status autentikasi pengguna
-  Stream<User?> get user => _firebaseAuth.authStateChanges();
+  Stream<User?> get user => _supabaseClient.auth.onAuthStateChange.map((data) {
+    return data.session?.user;
+  });
 
   // Fungsi untuk Sign Up
   Future<void> signUp({
@@ -20,34 +19,12 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      UserCredential userCredential = await _firebaseAuth
-          .createUserWithEmailAndPassword(email: email, password: password);
-
-      // Simpan data tambahan ke Firestore
-      if (userCredential.user != null) {
-        Employee newEmployee = Employee(
-          employeeId: userCredential.user!.uid,
-          email: email,
-          fullName: name,
-          phoneNumber: null,
-          address: null,
-          dateOfBirth: null,
-          gender: null,
-          position: null,
-          department: null,
-          hireDate: DateTime.now(),
-          employeeStatus: 'aktif',
-          profilePictureUrl: null,
-        );
-        await _firestore
-            .collection('employees')
-            .doc(userCredential.user!.uid)
-            .set(newEmployee.toJson());
-
-        await _firebaseAuth.signOut();
-      }
-    } on FirebaseAuthException catch (e) {
-      // Menangani error spesifik dari Firebase Auth
+      await _supabaseClient.auth.signUp(
+        email: email,
+        password: password,
+        data: {'full_name': name},
+      );
+    } on AuthException catch (e) {
       throw Exception(e.message);
     } catch (e) {
       throw Exception(e.toString());
@@ -55,16 +32,16 @@ class AuthRepository {
   }
 
   // Fungsi untuk Sign In
-  Future<UserCredential> signIn({
+  Future<AuthResponse> signIn({
     required String email,
     required String password,
   }) async {
     try {
-      return await _firebaseAuth.signInWithEmailAndPassword(
+      return await _supabaseClient.auth.signInWithPassword(
         email: email,
         password: password,
       );
-    } on FirebaseAuthException catch (e) {
+    } on AuthException catch (e) {
       throw Exception(e.message);
     } catch (e) {
       throw Exception('Terjadi kesalahan saat login.');
@@ -73,20 +50,35 @@ class AuthRepository {
 
   // Fungsi untuk Sign Out
   Future<void> signOut() async {
-    await _firebaseAuth.signOut();
+    await _supabaseClient.auth.signOut();
   }
 
   Stream<Employee> getEmployeeStream(String employeeId) {
-    return _firestore.collection('employees').doc(employeeId).snapshots().map((
-      snapshot,
-    ) {
-      if (snapshot.exists) {
-        // Konversi snapshot Firestore menjadi objek Employee
-        return Employee.fromSnapshot(snapshot);
-      } else {
-        // Jika data tidak ditemukan, lemparkan error
+    // 1. Buat stream yang hanya MENDENGARKAN perubahan pada baris data karyawan tertentu.
+    // Urutan ini benar: .from().stream().eq()
+    final realTimeStream = _supabaseClient
+        .from('karyawan')
+        .stream(primaryKey: ['employee_id'])
+        .eq('employee_id', employeeId);
+
+    // 2. Gunakan 'asyncMap' untuk mengubah stream.
+    // Setiap kali 'realTimeStream' mendeteksi perubahan dan mengirim data mentah...
+    return realTimeStream.asyncMap((listOfMaps) async {
+      if (listOfMaps.isEmpty) {
+        // Ini bisa terjadi jika pengguna dihapus.
         throw Exception("Data karyawan tidak ditemukan untuk ID: $employeeId");
       }
+
+      // 3. ...Kita lakukan FETCH data yang LENGKAP dengan relasinya.
+      // Ini adalah query satu kali (Future), bukan stream.
+      final fullData = await _supabaseClient
+          .from('karyawan')
+          .select('*, departemen(*), jabatan(*)')
+          .eq('employee_id', employeeId)
+          .single(); // .single() lebih efisien karena kita tahu hanya ada 1 hasil
+
+      // 4. Konversi data lengkap tersebut menjadi objek Employee dan kirimkan ke UI.
+      return Employee.fromMap(fullData);
     });
   }
 }
