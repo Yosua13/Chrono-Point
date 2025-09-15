@@ -4,13 +4,17 @@ import 'package:chrono_point/presentation/screens/main_screen.dart';
 import 'package:chrono_point/presentation/screens/login_screen.dart';
 import 'package:chrono_point/presentation/widgets/app_dialogs.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'firebase_options.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await dotenv.load(fileName: ".env");
+  await supabase.Supabase.initialize(
+    url: dotenv.env['URL'] ?? '',
+    anonKey: dotenv.env['ANONKEY'] ?? '',
+  );
   runApp(const MyApp());
 }
 
